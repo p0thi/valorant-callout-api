@@ -11,14 +11,23 @@ import httpStatus from 'http-status'
 import ApiError from './utils/ApiError'
 import { errorConverter, errorHandler } from './middlewares/error'
 import passport from 'passport'
-import { anonymousStrategy, jwtStrategy } from '@/config/passport'
-import swaggerUi from 'swagger-ui-express'
+import { anonymousStrategy, jwtStrategy, discordStrategy} from '@/config/passport'
+import bodyParser from "body-parser";
 
 const app = express()
 
-app.use(passport.initialize())
 passport.use(jwtStrategy)
+passport.use(discordStrategy)
 passport.use(anonymousStrategy)
+app.use(passport.initialize())
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
 
 if (!IS_TEST) {
   app.use(morganSuccessHandler)
@@ -59,5 +68,8 @@ app.use(errorConverter)
 
 // handle error
 app.use(errorHandler)
+
+app.use(bodyParser.json())
+
 
 export default app

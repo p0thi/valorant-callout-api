@@ -1,57 +1,38 @@
 import { Schema, Document, model } from 'mongoose'
-import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { JWT_EXPIRE, JWT_SECRET } from '@/config/config'
 import uniqueValidator from 'mongoose-unique-validator'
 import privateValidator from 'mongoose-private'
 
 export interface IUser {
-  first_name: string
-  last_name: string
-  email: string
-  hash_password: string
-  salt: string
+  discordId: string
+  accessToken: string
+  refreshToken: string
 }
 
 export interface IUserToAuthJSON {
-  first_name: string
-  last_name: string
-  name: string
-  email: string
+  discordId: string
+  token: string
 }
 
 export default interface IUserModel extends Document, IUser {
-  setPassword(password: string): void
-  validPassword(password: string): boolean
   toAuthJSON(): IUserToAuthJSON
   generateJWT(): string
-  generateAccessJWT(): string
-  name: string
 }
 
 const schema = new Schema<IUserModel>(
   {
-    first_name: {
-      type: String,
-      required: true,
-      minlength: 3,
-    },
-    last_name: {
-      type: String,
-      required: true,
-    },
-    email: {
+    discordId: {
       type: String,
       required: true,
       unique: true,
     },
-    hash_password: {
+    accessToken: {
       type: String,
-      private: true,
+      required: true,
     },
-    salt: {
+    refreshToken: {
       type: String,
-      private: true,
     },
   },
   {
@@ -60,29 +41,14 @@ const schema = new Schema<IUserModel>(
 )
 
 // Plugins
-schema.plugin(uniqueValidator)
+// schema.plugin(uniqueValidator)
 schema.plugin(privateValidator)
 
-schema.virtual('name').get(function (this: IUserModel) {
-  return `${this.first_name} ${this.last_name}`
-})
-
-schema.methods.setPassword = function (password: string) {
-  this.salt = crypto.randomBytes(16).toString('hex')
-  this.hash_password = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex')
-}
-
-schema.methods.validPassword = function (password: string): boolean {
-  const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex')
-  return this.hash_password === hash
-}
-
 schema.methods.generateJWT = function (): string {
+  console.log(this._id.toString())
   return jwt.sign(
     {
-      id: this._id,
-      name: this.name,
-      email: this.email,
+      id: this._id.toString(),
     },
     JWT_SECRET,
     {
@@ -92,12 +58,9 @@ schema.methods.generateJWT = function (): string {
 }
 
 schema.methods.toAuthJSON = function () {
-  const { first_name, last_name, name, email } = this
+  const { discordId } = this
   return {
-    name,
-    first_name,
-    last_name,
-    email,
+    discordId,
     token: this.generateJWT(),
   }
 }

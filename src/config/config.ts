@@ -13,3 +13,9 @@ export const DB = {
   PORT: Number(process.env.DB_PORT) || 27017,
 }
 export const DB_URI = process.env.DB_URI || 'mongodb://localhost:27017/Mocks'
+export const DISCORD = {
+  CLIENT_ID: process.env.DISCORD_CLIENT_ID,
+  CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  SCOPES: process.env.DISCORD_SCOPES.split(','),
+  CALLBACK_URL: process.env.DISCORD_CALLBACK_URL,
+}

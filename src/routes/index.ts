@@ -1,11 +1,15 @@
 import express from 'express'
 
-import stores from './stores.route'
 import auth from './auth.route'
+import maps from './maps.route'
+import images from './images.route'
+import callouts from './callouts.route'
 
 const router = express.Router()
 
-router.use('/stores', stores)
-router.use(auth)
+router.use('/maps', maps)
+router.use('/auth', auth)
+router.use('/images', images)
+router.use('/callouts', callouts)
 
 export default router
