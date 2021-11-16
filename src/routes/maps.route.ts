@@ -8,7 +8,7 @@
  *         description: Returns a mysterious string.
  */
 
-import IUserModel, { User } from '@/models/user.model'
+import IUserModel, {IUser, User} from '@/models/user.model'
 import ApiError from '@/utils/ApiError'
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -22,16 +22,18 @@ import passport from 'passport'
 import IMapModel, { Map } from '@/models/maps.model'
 import FileStorageSystem from '@/utils/FileStorageSystem'
 import * as path from 'path'
+import {checkRoles} from "@/middlewares/checkRoles";
+import Roles from "@/utils/Roles";
 
 const router = express.Router()
 const fileStorage = FileStorageSystem.getInstance()
 
 router.get('/all', passport.authenticate(['jwt', 'anonymous']), async (req, res) => {
-  const all = await Map.find()
+  const all = await Map.find();
   res.json(all)
 })
 
-router.post('/create', passport.authenticate(['jwt']), fileUpload(), async (req, res) => {
+router.post('/create', passport.authenticate(['jwt']), checkRoles(Roles.EDITOR), fileUpload(), async (req, res) => {
   const files = req.files as { [p: string]: Express.Multer.File[] }
 
   // console.log(req.body)
@@ -91,7 +93,7 @@ router.post('/create', passport.authenticate(['jwt']), fileUpload(), async (req,
   return res.json(doc)
 })
 
-router.patch('/edit/:id', passport.authenticate(['jwt']), async (req, res) => {
+router.patch('/edit/:id', passport.authenticate(['jwt']), checkRoles(Roles.EDITOR), async (req, res) => {
   const minimapFile = 'minimap' in req.files ? (req.files.minimap as unknown as UploadedFile) : null
   const loadingScreenFile = 'loadingScreen' in req.files ? (req.files.loadingScreen as unknown as UploadedFile) : null
   const name = req.body.name
@@ -158,7 +160,7 @@ router.patch('/edit/:id', passport.authenticate(['jwt']), async (req, res) => {
   res.status(httpStatus.INTERNAL_SERVER_ERROR)
 })
 
-router.delete('/delete/:id', passport.authenticate(['jwt']), (req, res) => {
+router.delete('/delete/:id', passport.authenticate(['jwt']), checkRoles(Roles.EDITOR), (req, res) => {
   Map.deleteOne({ _id: req.params.id })
     .then(() => {
       res.status(OK)

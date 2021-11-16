@@ -3,6 +3,7 @@ import IUserModel, { User } from '@/models/user.model'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 import { Strategy as AnonymousStrategy } from 'passport-anonymous'
 import { Strategy as DiscordStrategy } from 'passport-discord'
+import Roles from "@/utils/Roles";
 
 interface JWTPayload {
   id: string
